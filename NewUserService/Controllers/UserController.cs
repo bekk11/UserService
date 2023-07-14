@@ -52,7 +52,22 @@ public class UserController : Controller
 
         _appDbContext.Users.Add(user);
 
-        await _appDbContext.SaveChangesAsync();
+        try
+        {
+            await _appDbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException e)
+        {
+            if (e.InnerException != null)
+            {
+                return BadRequest(new BaseResponse<User>
+                    { Success = false, Message = e.InnerException.Message, Data = null });
+            }
+            
+            return BadRequest(new BaseResponse<User>
+                { Success = false, Message = e.Message, Data = null });
+        }
+        
 
         return Created("", new BaseResponse<User> { Success = true, Message = "SUCCESSFULLY CREATED", Data = user });
     }
@@ -71,7 +86,21 @@ public class UserController : Controller
         
         user.UpdateUser(userCreateTemplate);
 
-        await _appDbContext.SaveChangesAsync();
+        try
+        {
+            await _appDbContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            if (e.InnerException != null)
+            {
+                return BadRequest(new BaseResponse<User>
+                    { Success = false, Message = e.InnerException.Message, Data = null });
+            }
+            
+            return BadRequest(new BaseResponse<User>
+                { Success = false, Message = e.Message, Data = null });
+        }
 
         return Ok(new BaseResponse<User> { Success = true, Message = "SUCCESSFULLY UPDATED", Data = user });
     }

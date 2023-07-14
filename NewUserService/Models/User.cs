@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using NewUserService.Models.Enums;
 using NewUserService.Models.Templates;
 using NewUserService.Utils;
@@ -35,23 +36,31 @@ public class User
     [RegularExpression(@"^\d{14}$", ErrorMessage = "The PINFL field must be 14 digits.")]
     public string PINFL { get; set; }
 
-    [EmailAddress] [Column("email")] public string Email { get; set; }
+    [EmailAddress] 
+    [Column("email")] 
+    public string Email { get; set; }
 
     [Required]
     [Column("username", TypeName = "varchar(150)")]
     [RegularExpression(@"[a-zA-Z0-9_]{3,20}$", ErrorMessage = "Invalid username format.")]
     public string Username { get; set; }
 
-    [Required] [Column("password_hash")] public byte[] PasswordHash { get; set; }
+    [JsonIgnore]
+    [Required]
+    [Column("password_hash")]
+    public byte[] PasswordHash { get; set; }
 
-    [Required] [Column("salt")] public byte[] Salt { get; set; }
-    
-    
+    [JsonIgnore]
+    [Required]
+    [Column("salt")]
+    public byte[] Salt { get; set; }
+
+
     public void CreateUser(UserCreateTemplate userCreateTemplate)
     {
         FirstName = userCreateTemplate.FirstName;
         LastName = userCreateTemplate.LastName;
-        Gender = userCreateTemplate.Gender;
+        Gender = userCreateTemplate.Gender == "Male" ? Gender.Male : Gender.Female;
         PassportSerNum = userCreateTemplate.PassportSerNum;
         PINFL = userCreateTemplate.PINFL;
         Email = userCreateTemplate.Email;
@@ -59,12 +68,12 @@ public class User
         Salt = PasswordHasher.GenerateSalt();
         PasswordHash = PasswordHasher.HashPassword(userCreateTemplate.Password, Salt);
     }
-    
+
     public void UpdateUser(UserCreateTemplate userCreateTemplate)
     {
         FirstName = userCreateTemplate.FirstName;
         LastName = userCreateTemplate.LastName;
-        Gender = userCreateTemplate.Gender;
+        Gender = userCreateTemplate.Gender == "Male" ? Gender.Male : Gender.Female;
         PassportSerNum = userCreateTemplate.PassportSerNum;
         PINFL = userCreateTemplate.PINFL;
         Email = userCreateTemplate.Email;
